@@ -90,7 +90,15 @@ function adapter(uri, opts){
    */
 
   Redis.prototype.onmessage = function(channel, msg){
-    var args = msgpack.decode(msg);
+    var args = null;
+    
+    try {
+      args = msgpack.decode(msg);
+    } catch(e) {
+      console.error("SOCKET-IO.REDIS. MSGPACK. FAILED TO PARSE PACKET. MSG = ", msg, "ERROR = ", e);
+      return;
+    }
+
     var packet;
 
     if (uid == args.shift()) return debug('ignore same uid');
