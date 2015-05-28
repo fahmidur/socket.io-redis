@@ -90,7 +90,16 @@ function adapter(uri, opts){
   Redis.prototype.onmessage = function(pattern, channel, msg){
     var pieces = channel.split('#');
     if (uid == pieces.pop()) return debug('ignore same uid');
-    var args = msgpack.decode(msg);
+    var args = null;
+    try {
+      args = msgpack.decode(msg);
+    } catch(e) {
+      console.error("* SOCKET-IO.REDIS. MSGPACK. FAILED TO PARSE PACKET. MSG = ", msg, "ERROR = ", e);
+      console.error("* MSG(ascii) = ", msg.toString('utf8'));
+      console.error("* MSG(utf8) = ", msg.toString('utf8'));
+      console.error("* ------------------------------------------ *");
+      return;
+    }
 
     if (args[0] && args[0].nsp === undefined)
       args[0].nsp = '/'
@@ -98,7 +107,7 @@ function adapter(uri, opts){
     if (!args[0] || args[0].nsp != this.nsp.name) return debug('ignore different namespace')
     args.push(true);
     this.broadcast.apply(this, args);
-  };
+  };;
 
   /**
    * Broadcasts a packet.
